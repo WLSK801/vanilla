@@ -12,5 +12,6 @@ public class CsvReaderTest {
 		DataFrame df = rd.readLocal("MyData.csv");
 		System.out.println(df.getPosition(2, 2));
 		System.out.println(df.getRowNum());
+		System.out.println(5 << 1);
 	}
 }

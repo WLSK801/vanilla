@@ -3,6 +3,7 @@ package com.vanilla.io.reader;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.vanilla.data.dataframe.DataFrame;
@@ -25,10 +26,10 @@ public class CsvReader {
 			while ((line = br.readLine()) != null) {
 				String[] values = line.split(cvsSplitBy);
 				if (lineNumber == 1) {
-					result = new DataFrame(Arrays.asList(values));
+					result = new DataFrame(new ArrayList<String>(Arrays.asList(values)));
 				}
 				else {
-					result.writeRow(Arrays.asList(values));
+					result.writeRow(new ArrayList<String>(Arrays.asList(values)));
 				} 
 				lineNumber++;
 			}

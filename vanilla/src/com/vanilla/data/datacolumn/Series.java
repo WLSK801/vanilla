@@ -218,7 +218,16 @@ public class Series {
 		Object[] res = new Object[size()];
 		int i = 0;
 		for (DataNode node : orderedData) {
-			res[i] = node.getValue();
+			res[i++] = node.getValue();
+		}
+		return res;
+		
+	}
+	public String[] getValueArray() {
+		String[] res = new String[size()];
+		int i = 0;
+		for (DataNode node : orderedData) {
+			res[i++] = node.getValue();
 		}
 		return res;
 		
@@ -249,7 +258,9 @@ public class Series {
 		int pos = getPositionByheader(header);
 		return orderedData.remove(pos);
 	}
-	
+	public String getHeader(int position) {
+		return orderedData.get(position).getKey();
+	}
 	public DataNode remove(int position) {
 		if (position < 0 || position >= size()) {
 			return null;

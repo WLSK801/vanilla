@@ -1,6 +1,5 @@
 package com.vanilla.data.dataframe;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -76,6 +75,36 @@ public class DataFrame {
 		rowNum++;
 		
 	}
+	public void writeRow(Series row) {
+		if (row.size() != colNum) {
+			throw new IllegalArgumentException("row length have to equal to data frame column number"); 
+		}
+		
+		rowList.add(row);
+		rowNum++;
+		
+	}
+	/**
+	 * add one column to dataframe, if dataframe already contains column
+	 * replace it.
+	 * @param colName
+	 * @param column
+	 */
+	public void writeColumn(String name, List<String> column) {
+		if (column.size() != rowNum) {
+			throw new IllegalArgumentException("column length have to equal to data frame row number"); 
+		}
+		
+		int i = 0;
+		for (Series row : rowList) {
+			row.setValue(name, column.get(i++));
+		}
+		if (!columnName.contains(name)) {
+			columnName.add(name);
+		}
+		colNum++;
+		
+	}
 	
 	public Series getRow(int position) {
 		if (position < 0  || position >= rowNum) {
@@ -94,13 +123,53 @@ public class DataFrame {
 		return result;
 		
 	}
+	public List<String> getColumn(int position) {
+
+		List<String> result = new ArrayList<String>(rowNum);
+
+		for (int i = 0; i < rowNum; i++) {
+			result.add(rowList.get(i).getValueByPosition(position));
+		}
+		return result;
+		
+	}
 	public int getRowNum() {
 		return rowNum;
 	}
+	public int getColumnNum() {
+		return colNum;
+	}
+	
 	
 	public List<Series> getRowList() {
 		return rowList;
 		
+	}
+	public int getHeader(String header) {
+		int i = 0;
+		for (String head : columnName) {
+			if (head.equals(header)) return i;
+			else i++;
+		}
+		return -1;
+	}
+	
+	
+	public String[][] toArray(){
+		String[][] res = new String[rowNum][colNum];
+		int i = 0;
+		for (Series row : rowList) {
+			res[i++] = row.getValueArray();
+		}
+		return res;
+	}
+	public List<String> remove(int position) {
+		List<String> deleted = getColumn(position);
+		for (Series series : rowList) {
+			series.remove(position);
+		}
+		colNum--;
+		return deleted;
 	}
 	
 	
