@@ -30,6 +30,7 @@ public class LogisticRegression implements Model {
 		if (!isTrain) {
 			throw new NullPointerException("Model does not exist");
 		}
+		System.out.println(parameters);
 		List<String> res = new ArrayList<>(frame.getRowNum());
 		for (Series series : frame.getRowList()) {
 			String value = "" + hypothesis(series);
@@ -43,6 +44,8 @@ public class LogisticRegression implements Model {
 		List<String> output = frame.remove(outputColumn);
 		List<String> headers = new ArrayList<>();
 		List<String> values = new ArrayList<>();
+		headers.add("x0" + output.hashCode());
+		values.add("0.0");
 		for (String header : frame.getRow(0).getHeaderArray()) {
 			headers.add(header);
 			values.add("0.0");
@@ -51,27 +54,42 @@ public class LogisticRegression implements Model {
 		double pastCost = cost(frame, output);
 		update(frame, output);
 		double currCost = cost(frame, output);
-		while (pastCost - currCost > 0.01) {
+		int it = 0;
+		while (it < 10000) {
+			System.out.println(currCost);
 			pastCost = currCost;
 			update(frame, output);
 			currCost = cost(frame, output);
+			it++;
 		}
 		isTrain = true;
 
 	}
 
-	private void update(DataFrame frame, List<String> output) {
+	private void update(DataFrame frame, List<String> output) {		
+
+		
 		for (int i = 0; i < parameters.size(); i++) {
 			double currParam = Double.parseDouble(parameters
 					.getValueByPosition(i));
 			double sum = 0.0;
 			int j = 0;
 			for (Series ser : frame.getRowList()) {
-				double currY = Double.parseDouble(output.get(i));
-				sum += (hypothesis(ser) - Double.parseDouble(output.get(i)))
-						* Double.parseDouble(ser.getValueByPosition(i));
+				double currY = Double.parseDouble(output.get(j));
+				if (i == 0) {
+					//x0
+					sum += (hypothesis(ser) - currY);
+				}
+				else {
+					//x1.....xn
+					sum += (hypothesis(ser) - currY)
+							* Double.parseDouble(ser.getValueByPosition(i - 1));
+				}
+				
+				j++;
 			}
 			double newParam = currParam - sum * rate / output.size();
+			System.out.println(newParam);
 			parameters.setValue(i, "" + newParam);
 		}
 	}
@@ -81,7 +99,7 @@ public class LogisticRegression implements Model {
 	}
 
 	private double hypothesis(Series values) {
-		double res = 0.0;
+		double res = Double.parseDouble(parameters.getValueByPosition(0));
 		for (String head : values.getHeaderArray()) {
 			res += Double.parseDouble(values.getValueByHeader(head))
 					* Double.parseDouble(parameters.getValueByHeader(head));
@@ -96,8 +114,9 @@ public class LogisticRegression implements Model {
 			double currY = Double.parseDouble(output.get(i));
 			cost += currY * Math.log(hypothesis(ser)) + (1 - currY)
 					* Math.log(1 - hypothesis(ser));
+			i++;
 		}
-		return cost / (i + 1);
+		return -1 * cost / (i + 1);
 
 	}
 

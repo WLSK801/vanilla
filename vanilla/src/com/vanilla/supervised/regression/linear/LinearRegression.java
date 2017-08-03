@@ -16,7 +16,7 @@ public class LinearRegression implements Model {
 	
 	public LinearRegression() {
 		isTrain = false;
-		learningRate = 0.005;
+		learningRate = 0.0000001;
 		outputColumn = 0;
 	}
 	/**
@@ -82,9 +82,10 @@ public class LinearRegression implements Model {
 
 		double minCost = Double.MAX_VALUE;
 		int it = 0;
-		while (it < 10000 && 
-				Math.abs(oldCost - newCost) > 0.0001) {
+		while (it < 100000 && 
+				oldCost - newCost > 0.000001) {
 			System.out.println(Math.abs(oldCost - newCost));
+			System.out.println(it);
 			update(parameters, input, output);
 			oldCost = newCost;
 			newCost = cost(parameters, input, output);

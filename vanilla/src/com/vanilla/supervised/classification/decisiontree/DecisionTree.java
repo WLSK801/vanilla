@@ -102,8 +102,8 @@ public class DecisionTree implements Model {
 				if (size == 0) continue;
 				
 				int count = 0;
-				for (String ele : output) {
-					if (ele.equals(value)) {
+				for (Integer index : group) {
+					if (value.equals(output.get(index))) {
 						count++;
 					}
 				}
@@ -111,35 +111,38 @@ public class DecisionTree implements Model {
 				gini += (proportion * (1.0 - proportion));
 			}
 		}
+		
 		return gini;
 		
 	}
-	private List<List<Integer>> testSplit(DataFrame frame, double value, int index) {
+	private List<List<Integer>> testSplit(DataFrame frame, double value, int index, List<Integer> group) {
 		List<Integer> left = new ArrayList<>();
 		List<Integer> right = new ArrayList<>();
-		int i = 0;
-		for (Series row : frame.getRowList()) {
+
+		for (Integer rowIndex : group) {
+			Series row = frame.getRow(rowIndex);
 			double ele = Double.parseDouble(row.getValueByPosition(index));
-			if (ele < value) left.add(i);
-			else right.add(i);
-			i++;
+			if (ele < value) left.add(rowIndex);
+			else right.add(rowIndex);
+
 		} 
 		List<List<Integer>> res = new ArrayList<>();
 		res.add(left);
 		res.add(right);
 		return res;
 	}
-	private TreeNode getSplit(DataFrame frame, List<String> output) {
+	private TreeNode getSplit(DataFrame frame, List<String> output, List<Integer> group) {
 
 		Set<String> classValues = new HashSet<>(output);
 		double minGini = 999.0;
 		List<List<Integer>> resGroups = null;
 		int index = 0;
 		double value = 0.0;
-		for (int i = 0; i < frame.getRowNum(); i++) {
-			for (Series row : frame.getRowList()) {
+		for (int i = 0; i < frame.getColumnNum(); i++) {
+			for (Integer rowIndex : group) {
+				Series row = frame.getRow(rowIndex);
 				List<List<Integer>> groups = testSplit(frame,
-						Double.parseDouble(row.getValueByPosition(i)), i);
+						Double.parseDouble(row.getValueByPosition(i)), i, group);
 				double gini = giniIndex(groups, output, classValues);
 				if (minGini > gini) {
 					resGroups = groups;
@@ -149,11 +152,13 @@ public class DecisionTree implements Model {
 				}
 			}
 		}
+
 		return new TreeNode(index, value, resGroups);
 	}
 	private String getTerminal(List<Integer> group, List<String> output) {
 		Map<String, Integer> map = new HashMap<>();
-		for (String ele: output) {
+		for (Integer index : group) {
+			String ele = output.get(index);
 			if (map.containsKey(ele)) {
 				map.put(ele, map.get(ele) + 1);
 			}
@@ -196,7 +201,7 @@ public class DecisionTree implements Model {
 			node.leftLeaf = getTerminal(leftGroup, output);
 		}
 		else {
-			node.left = getSplit(frame,  output);
+			node.left = getSplit(frame, output, leftGroup);
 			split(node.left, maxDepth, minSize, depth + 1, frame, output);
 		}
 		if (rightGroup.size() <= minSize) {
@@ -204,13 +209,18 @@ public class DecisionTree implements Model {
 			node.rightLeaf = getTerminal(rightGroup, output);
 		}
 		else {
-			node.right = getSplit(frame,  output);
+			node.right = getSplit(frame,  output, rightGroup);
 			split(node.right, maxDepth, minSize, depth + 1, frame, output);
 		}
 	}
 	private TreeNode buildTree(DataFrame frame, List<String> output, int maxDepth, int minSize) {
-		TreeNode root = getSplit(frame, output);
-		split(root,maxDepth, minSize, 1, frame, output);
+		List<Integer> indexList = new ArrayList<>(frame.getRowNum());
+		
+		for (int i = 0; i < frame.getRowNum(); i++) {
+			indexList.add(i);
+		}
+		TreeNode root = getSplit(frame, output, indexList);
+		split(root, maxDepth, minSize, 1, frame, output);
 		return root;
 	}
 	class TreeNode {
@@ -229,6 +239,28 @@ public class DecisionTree implements Model {
 			isTerminal = false;
 		}
 
+	}
+	@Override
+	public String toString() {
+		return printHelper(root);
+		
+	}
+	private String printHelper(TreeNode root) {
+		if (root == null) return "[]";
+		StringBuilder sb = new StringBuilder();
+		sb.append("[");
+		if (root.isTerminal) {
+			sb.append(root.leftLeaf);
+			sb.append(",");
+			sb.append(root.rightLeaf);
+
+		}
+		else {
+			sb.append(printHelper(root.left));
+			sb.append(",");
+			sb.append(printHelper(root.right));
+		}
+		return sb.append("]").toString();
 	}
 
 
