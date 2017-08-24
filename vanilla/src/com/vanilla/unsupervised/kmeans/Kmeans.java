@@ -8,21 +8,37 @@ import com.vanilla.data.dataframe.DataFrame;
 public class Kmeans {
 
 	public List<Integer> process(DataFrame frame, int clusters) {
-		int[] originalPositions = getRandomCentroids(clusters, frame.getRowNum());
-		Series[] originalSeries = new Series[clusters];
-		List<Series> rowList = frame.getRowList();
-		for (int i = 0; i < clusters; i++) {
-			originalSeries[i] = rowList.get(originalPositions[i]);
+		double minCost = Double.MAX_VALUE;
+		List<Integer> finalAssign = null;
+		for (int test = 0; test < 5; test++) {
+			int[] originalPositions = getRandomCentroids(clusters, frame.getRowNum());
+			Series[] originalSeries = new Series[clusters];
+			List<Series> rowList = frame.getRowList();
+			for (int i = 0; i < clusters; i++) {
+				originalSeries[i] = rowList.get(originalPositions[i]);
+			}
+			List<Integer> originalAssign = assignCentroid(rowList, originalSeries);
+			Series[] newSeries = getMeans(originalAssign, rowList, clusters);
+			int maxite = 100;
+			//&& !
+			while (maxite > 0 && !testEnd(originalSeries, newSeries)) {
+				
+				originalAssign = assignCentroid(rowList, newSeries);
+				originalSeries = newSeries;
+				newSeries = getMeans(originalAssign, rowList, clusters);
+				
+				maxite--;
+			}
+			double currCost = cost(newSeries, rowList, originalAssign);
+			if (currCost < minCost) {
+				finalAssign = originalAssign;
+				minCost = currCost; 
+			}
+			
 		}
-		List<Integer> originalAssign = assignCentroid(rowList, originalSeries);
-		Series[] newSeries = getMeans(originalAssign, rowList, clusters);
-		int maxite = 10000;
-		while (maxite > 0 && !testEnd(originalSeries, newSeries)) {
-			originalAssign = assignCentroid(rowList, newSeries);
-			originalSeries = newSeries;
-			newSeries = getMeans(originalAssign, rowList, clusters);
-		}
-		return originalAssign;
+		System.out.println(minCost);
+		
+		return finalAssign;
 		
 	}
 	public int[] getRandomCentroids(int clusters, int dataLength) {
@@ -110,5 +126,12 @@ public class Kmeans {
 		else {
 			return false;
 		}
+	}
+	public double cost(Series[] means, List<Series> serList, List<Integer> assigns) {
+		double result = 0.0;
+		for (int i = 0; i < serList.size(); i++) {
+			result += getEuclideanDistance(serList.get(i), means[assigns.get(i)]);
+		}
+		return result;
 	}
 }
