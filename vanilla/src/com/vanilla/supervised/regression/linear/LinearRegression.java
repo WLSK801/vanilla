@@ -16,7 +16,7 @@ public class LinearRegression implements Model {
 	
 	public LinearRegression() {
 		isTrain = false;
-		learningRate = 0.0000001;
+		learningRate = 0.00006;
 		outputColumn = 0;
 	}
 	/**
@@ -37,9 +37,7 @@ public class LinearRegression implements Model {
 			throw new NullPointerException("Model does not exist");
 		}
 		List<String> res = new ArrayList<>(frame.getRowNum());
-		System.out.println(modelParameter);
-		System.out.println(modelParameter.getValueByPosition(0));
-		System.out.println(modelParameter.getValueByPosition(1));
+
 		for (Series series : frame.getRowList()) {
 			Double sum = Double.parseDouble(modelParameter.getValueByPosition(0));
 			for (int i  = 0; i < series.size(); i++) {
@@ -78,21 +76,20 @@ public class LinearRegression implements Model {
 		Double oldCost = cost(parameters, input, output);
 
 		update(parameters, input, output);
-		Double newCost = cost(parameters, input, output);
+		//Double newCost = cost(parameters, input, output);
 
-		double minCost = Double.MAX_VALUE;
+		//double minCost = Double.MAX_VALUE;
 		int it = 0;
-		while (it < 100000 && 
-				oldCost - newCost > 0.000001) {
-			System.out.println(Math.abs(oldCost - newCost));
-			System.out.println(it);
-			update(parameters, input, output);
-			oldCost = newCost;
-			newCost = cost(parameters, input, output);
+		while (it <= 40000) {
 
+			update(parameters, input, output);
+			//oldCost = newCost;
+			//newCost = cost(parameters, input, output);
 			
 			it++;
 		}
+		System.out.println(cost(parameters, input, output));
+		
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("X0" + data.hashCode());
 		int headPos = 0;
@@ -148,12 +145,16 @@ public class LinearRegression implements Model {
 		for (int i = 0; i < data.length; i++) {
 			Double hx = parameters.get(0);
 			for (int j = 0; j < data[0].length; j++) {
-				hx += parameters.get(j) * Double.parseDouble(data[i][j]);
+				hx += parameters.get(j + 1) * Double.parseDouble(data[i][j]);
 			}
 			cost += (hx - Double.parseDouble(output[i])) * (hx - Double.parseDouble(output[i]));
 		}
 		cost = cost / (output.length << 1);
 		return cost;
+	}
+	@Override
+	public boolean isTrain() {
+		return isTrain;
 	}
 
 }

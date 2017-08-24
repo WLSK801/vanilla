@@ -19,4 +19,9 @@ public interface Model {
 	 * @param outputColumn the column where outcolumn data located
 	 */
 	public void train(DataFrame frame, int outputColumn);
+	/**
+	 * check model is sucessfully trained?
+	 * @return trained?
+	 */
+	public boolean isTrain();
 }

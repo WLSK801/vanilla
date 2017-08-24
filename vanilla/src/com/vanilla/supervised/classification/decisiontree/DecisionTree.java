@@ -264,5 +264,11 @@ public class DecisionTree implements Model {
 	}
 
 
+	@Override
+	public boolean isTrain() {
+		return isTrain;
+	}
+
+
 
 }

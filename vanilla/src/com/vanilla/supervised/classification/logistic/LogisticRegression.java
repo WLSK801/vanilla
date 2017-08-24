@@ -51,17 +51,19 @@ public class LogisticRegression implements Model {
 			values.add("0.0");
 		}
 		parameters = new Series("logistic", headers, values);
-		double pastCost = cost(frame, output);
+		//double pastCost = cost(frame, output);
 		update(frame, output);
-		double currCost = cost(frame, output);
+		//double currCost = cost(frame, output);
 		int it = 0;
-		while (it < 10000) {
-			System.out.println(currCost);
-			pastCost = currCost;
+		while (it <= 40000) {
+			//System.out.println(currCost);
+			//pastCost = currCost;
 			update(frame, output);
-			currCost = cost(frame, output);
+			//currCost = cost(frame, output);
+			//if (it % 1000 == 0) System.out.println(cost(frame, output));
 			it++;
 		}
+		System.out.println(cost(frame, output));
 		isTrain = true;
 
 	}
@@ -89,7 +91,7 @@ public class LogisticRegression implements Model {
 				j++;
 			}
 			double newParam = currParam - sum * rate / output.size();
-			System.out.println(newParam);
+			//System.out.println(newParam);
 			parameters.setValue(i, "" + newParam);
 		}
 	}
@@ -118,6 +120,12 @@ public class LogisticRegression implements Model {
 		}
 		return -1 * cost / (i + 1);
 
+	}
+
+	@Override
+	public boolean isTrain() {
+
+		return isTrain;
 	}
 
 }

@@ -19,9 +19,9 @@ public class LinearRegressionTest {
 	public LinearRegressionTest() {
 		
 		reader = new CsvReader();
-		df = reader.readLocal("linearre.csv");
+		df = reader.readLocal("linearre2.csv");
 		model = new LinearRegression();
-		dfP = reader.readLocal("linearreP.csv");
+		dfP = reader.readLocal("linearreP2.csv");
 
 		
 		
@@ -29,7 +29,7 @@ public class LinearRegressionTest {
 	
 	@Test
 	public void testTrain() {
-		model.train(df, 1);
+		model.train(df, 2);
 		System.out.println(model.predict(dfP));
 		
 		
